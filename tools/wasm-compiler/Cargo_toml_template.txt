@@ -1,14 +1,16 @@
+[workspace]
 [package]
-name = "rustwasmtest"
+name = "wasmwrapper"
 version = "0.1.0"
-authors = ["Sixty FPS <info@sixtyfps.io>"]
+authors = ["Automatically Generated <info@sixtyfps.io>"]
 edition = "2018"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
+path = "main.rs"
 
 [dependencies]
-sixtyfps = { path = "../../api/sixtyfps-rs" }
 wasm-bindgen = { version = "0.2" }
 web_sys = { version = "0.3", package = "web-sys", features=["console"] }
 console_error_panic_hook = "0.1.5"
+sixtyfps = { path = "${WEB_API_PATH}" }

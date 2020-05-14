@@ -10,7 +10,6 @@ members = [
     'tools/wasm-compiler',
     'examples/graphicstest',
     'examples/rusttest',
-    'examples/rustwasmtest',
     'helper_crates/const-field-offset',
     'helper_crates/vtable',
 ]

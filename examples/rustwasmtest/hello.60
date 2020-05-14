@@ -1,0 +1,32 @@
+
+
+Main = Rectangle {
+    color: white;
+
+    Rectangle {
+        width: 100;
+        height: 100;
+        color: blue;
+    }
+    Rectangle {
+        x: 100;
+        y: 100;
+        width: (100);
+        height: {100}
+        color: green;
+
+        Rectangle {
+            x: 50;
+            y: 50.;
+            width: 25;
+            height: 25;
+            color: red;
+        }
+    }
+    Image {
+        x: 200;
+        y: 200;
+        source: "../../../examples/graphicstest/logo.png";
+    }
+}
+

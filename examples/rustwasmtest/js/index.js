@@ -1,1 +1,1 @@
-import("../pkg/index.js").catch(console.error);
+import("../hello.60").then(module => console.log(`GOT: ${module.foo.foo}`)).catch(console.error())
