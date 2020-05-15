@@ -2,6 +2,25 @@ sixtyfps::sixtyfps! {
     ${SOURCE_CODE}
 }
 
+#[wasm_bindgen]
+pub struct JSComponent {
+    comp: Main
+}
+
+#[wasm_bindgen]
+impl JSComponent {
+    #[wasm_bindgen(constructor)]
+    pub fn new() -> JSComponent {
+        Self {
+            comp: Main::default()
+        }
+    }
+
+    pub fn run(&mut self) {
+        self.comp.run();
+    }
+}
+
 use wasm_bindgen::prelude::*;
 #[wasm_bindgen(start)]
 pub fn sixtyfps_main() {
@@ -9,5 +28,4 @@ pub fn sixtyfps_main() {
     // It's disabled in release mode so it doesn't bloat up the file size.
     #[cfg(debug_assertions)]
     console_error_panic_hook::set_once();
-    Main::default().run();
 }

@@ -23,5 +23,7 @@ export default function loader(this: webpack.loader.LoaderContext, source: strin
     console.log(`Running compiler with output directory ${wasm_output_dir}`)
     let proc = child_process.spawnSync(compiler_path, [this.resourcePath, wasm_output_dir]);
 
-    return `import * as wasm from '${wasm_output_dir + "/pkg/wasmwrapper.js"}'; export var foo = { foo: "bar" }; `;
+    return `import {JSComponent} from '${wasm_output_dir + "/pkg/wasmwrapper.js"}';
+    export default JSComponent;
+`;
 }
