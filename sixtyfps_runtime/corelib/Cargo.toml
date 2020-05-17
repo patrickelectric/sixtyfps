@@ -16,5 +16,19 @@ const-field-offset = { path = "../../helper_crates/const-field-offset" }
 winit = "0.22.1"
 lyon = { version = "0.15.8" }
 
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+winit = { version = "0.22.1", features = ["web-sys"] }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+winit = "0.22.1"
+
 [build-dependencies]
 cbindgen = "0.14.2"
+
+[dev-dependencies]
+parity-wasm = "0.41.0"
+wasm-bindgen-test = "0.3.0"
+wasm-bindgen = "0.2"
+js-sys = "0.3.39"
+wasm-bindgen-futures = "0.4.12"
