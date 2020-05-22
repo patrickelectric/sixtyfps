@@ -30,18 +30,16 @@ impl GLFont {
         atlas: &mut TextureAtlas,
         text: &str,
     ) -> Vec<u32> {
-        text.chars()
-            .map(|ch| {
-                let glyph = self.font.glyph_for_char(ch).unwrap();
+        let glyphs = super::text_shape::shape_text(text, &mut self.font);
 
-                if !self.glyphs.contains_key(&glyph) {
-                    // ensure the glyph is cached
-                    self.glyphs.insert(glyph, self.render_glyph(gl, atlas, glyph));
-                }
+        glyphs.iter().for_each(|glyph| {
+            if !self.glyphs.contains_key(&glyph) {
+                // ensure the glyph is cached
+                self.glyphs.insert(*glyph, self.render_glyph(gl, atlas, *glyph));
+            }
+        });
 
-                glyph
-            })
-            .collect()
+        glyphs
     }
 
     pub fn layout_glyphs<'a, I: std::iter::IntoIterator<Item = u32>>(

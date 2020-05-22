@@ -25,6 +25,7 @@ mod buffers;
 use buffers::{GLArrayBuffer, GLIndexBuffer};
 
 mod text;
+mod text_shape;
 
 mod fontcache;
 use fontcache::FontCache;
