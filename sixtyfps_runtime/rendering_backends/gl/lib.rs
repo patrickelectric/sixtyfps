@@ -305,6 +305,7 @@ impl RenderingPrimitivesBuilder for GLRenderingPrimitivesBuilder {
                     rect_path.close();
                     Some(self.create_path(&rect_path.build(), FillStyle::SolidColor(*color)))
                 }
+                #[cfg(not(target_arch = "wasm32"))]
                 RenderingPrimitive::Image { x: _, y: _, source } => {
                     match source {
                         Resource::AbsoluteFilePath(path) => {
@@ -314,14 +315,85 @@ impl RenderingPrimitivesBuilder for GLRenderingPrimitivesBuilder {
                             let image = image::open(image_path.as_path()).unwrap().into_rgba();
                             Some(self.create_image(image))
                         }
+
                         Resource::EmbeddedData { ptr, len } => {
                             let image_slice = unsafe { std::slice::from_raw_parts(*ptr, *len) };
                             let image = image::load_from_memory(image_slice).unwrap().to_rgba();
                             Some(self.create_image(image))
                         }
+
                         Resource::None => None,
                     }
                 }
+
+                #[cfg(target_arch = "wasm32")]
+                RenderingPrimitive::Image { x: _, y: _, source } => match source {
+                    Resource::AbsoluteFilePath(path) => unreachable!(),
+                    Resource::EmbeddedData { ptr, len } => {
+                        use wasm_bindgen::JsCast;
+
+                        let html_image = web_sys::window()
+                            .unwrap()
+                            .document()
+                            .unwrap()
+                            .create_element("img")
+                            .unwrap()
+                            .dyn_into::<web_sys::HtmlImageElement>()
+                            .unwrap();
+
+                        html_image.set_decoding("sync");
+
+                        let image_slice = unsafe { std::slice::from_raw_parts(*ptr, *len) };
+                        let image_array = js_sys::Uint8Array::from(image_slice);
+                        let image_buffer = image_array.buffer();
+                        let buffer_sequence = js_sys::Array::new();
+                        buffer_sequence.push(image_buffer.as_ref());
+                        let image_blob = web_sys::Blob::new_with_buffer_source_sequence(
+                            buffer_sequence.as_ref(),
+                        )
+                        .unwrap();
+                        let image_url = web_sys::Url::create_object_url_with_blob(&image_blob);
+                        html_image.set_src(image_url.as_ref().unwrap());
+
+                        let texture = GLTexture::new_from_html_image(&self.context, &html_image);
+
+                        let source_size = (html_image.natural_width(), html_image.natural_height());
+                        let rect = Rect::new(
+                            Point::new(0.0, 0.0),
+                            Size::new(source_size.0 as f32, source_size.1 as f32),
+                        );
+
+                        let vertex1 = Vertex { _pos: [rect.min_x(), rect.min_y()] };
+                        let vertex2 = Vertex { _pos: [rect.max_x(), rect.min_y()] };
+                        let vertex3 = Vertex { _pos: [rect.max_x(), rect.max_y()] };
+                        let vertex4 = Vertex { _pos: [rect.min_x(), rect.max_y()] };
+
+                        let tex_vertex1 = Vertex { _pos: [0., 0.] };
+                        let tex_vertex2 = Vertex { _pos: [1., 0.] };
+                        let tex_vertex3 = Vertex { _pos: [1., 1.] };
+                        let tex_vertex4 = Vertex { _pos: [0., 1.] };
+
+                        let normalized_coordinates: [Vertex; 6] = [
+                            tex_vertex1,
+                            tex_vertex2,
+                            tex_vertex3,
+                            tex_vertex1,
+                            tex_vertex3,
+                            tex_vertex4,
+                        ];
+
+                        let vertices = GLArrayBuffer::new(
+                            &self.context,
+                            &vec![vertex1, vertex2, vertex3, vertex1, vertex3, vertex4],
+                        );
+                        let texture_vertices =
+                            GLArrayBuffer::new(&self.context, &normalized_coordinates);
+
+                        Some(GLRenderingPrimitive::Texture { vertices, texture_vertices, texture })
+                    }
+                    Resource::None => None,
+                },
+
                 RenderingPrimitive::Text {
                     x: _,
                     y: _,
